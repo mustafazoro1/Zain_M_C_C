@@ -118,7 +118,39 @@ export interface PublishToggle {
   published: boolean;
 }
 
+export interface MachineryItem {
+  id: number;
+  name: string;
+  slug: string;
+  /** @nullable */
+  category?: string | null;
+  /** @nullable */
+  description?: string | null;
+  /** @nullable */
+  imageUrl?: string | null;
+  /** @nullable */
+  year?: string | null;
+  /** @nullable */
+  condition?: string | null;
+  published: boolean;
+}
+
+export interface MachineryInput {
+  /** @minLength 1 */
+  name: string;
+  /** @minLength 1 */
+  slug: string;
+  category?: string;
+  description?: string;
+  imageUrl?: string;
+  year?: string;
+  condition?: string;
+  published?: boolean;
+}
+
 export interface AdminCredentials {
+  /** @minLength 1 */
+  username: string;
   /** @minLength 1 */
   password: string;
 }
@@ -130,5 +162,9 @@ export interface AdminSession {
 export type ListProjectsParams = {
 published?: boolean;
 category_id?: number;
+};
+
+export type ListMachineryParams = {
+published?: boolean;
 };
 

@@ -338,12 +338,141 @@ export const DeleteProjectImageParams = zod.object({
 
 
 /**
+ * @summary List all machinery
+ */
+export const ListMachineryQueryParams = zod.object({
+  "published": zod.coerce.boolean().optional()
+})
+
+export const ListMachineryResponseItem = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "slug": zod.string(),
+  "category": zod.string().nullish(),
+  "description": zod.string().nullish(),
+  "imageUrl": zod.string().nullish(),
+  "year": zod.string().nullish(),
+  "condition": zod.string().nullish(),
+  "published": zod.boolean()
+})
+export const ListMachineryResponse = zod.array(ListMachineryResponseItem)
+
+
+/**
+ * @summary Create machinery
+ */
+
+
+
+
+export const CreateMachineryBody = zod.object({
+  "name": zod.string().min(1),
+  "slug": zod.string().min(1),
+  "category": zod.string().optional(),
+  "description": zod.string().optional(),
+  "imageUrl": zod.string().optional(),
+  "year": zod.string().optional(),
+  "condition": zod.string().optional(),
+  "published": zod.boolean().optional()
+})
+
+
+/**
+ * @summary Get machinery by slug
+ */
+export const GetMachineryParams = zod.object({
+  "slug": zod.coerce.string()
+})
+
+export const GetMachineryResponse = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "slug": zod.string(),
+  "category": zod.string().nullish(),
+  "description": zod.string().nullish(),
+  "imageUrl": zod.string().nullish(),
+  "year": zod.string().nullish(),
+  "condition": zod.string().nullish(),
+  "published": zod.boolean()
+})
+
+
+/**
+ * @summary Update machinery
+ */
+export const UpdateMachineryParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+
+
+
+
+export const UpdateMachineryBody = zod.object({
+  "name": zod.string().min(1),
+  "slug": zod.string().min(1),
+  "category": zod.string().optional(),
+  "description": zod.string().optional(),
+  "imageUrl": zod.string().optional(),
+  "year": zod.string().optional(),
+  "condition": zod.string().optional(),
+  "published": zod.boolean().optional()
+})
+
+export const UpdateMachineryResponse = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "slug": zod.string(),
+  "category": zod.string().nullish(),
+  "description": zod.string().nullish(),
+  "imageUrl": zod.string().nullish(),
+  "year": zod.string().nullish(),
+  "condition": zod.string().nullish(),
+  "published": zod.boolean()
+})
+
+
+/**
+ * @summary Toggle machinery published status
+ */
+export const ToggleMachineryPublishParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const ToggleMachineryPublishBody = zod.object({
+  "published": zod.boolean()
+})
+
+export const ToggleMachineryPublishResponse = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "slug": zod.string(),
+  "category": zod.string().nullish(),
+  "description": zod.string().nullish(),
+  "imageUrl": zod.string().nullish(),
+  "year": zod.string().nullish(),
+  "condition": zod.string().nullish(),
+  "published": zod.boolean()
+})
+
+
+/**
+ * @summary Delete machinery
+ */
+export const DeleteMachineryParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+
+/**
  * @summary Admin login
  */
 
 
 
+
 export const AdminLoginBody = zod.object({
+  "username": zod.string().min(1),
   "password": zod.string().min(1)
 })
 

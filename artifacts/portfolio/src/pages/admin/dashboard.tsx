@@ -1,114 +1,177 @@
 import { AdminLayout } from "@/components/layout/AdminLayout";
-import { useListProjects, useToggleProjectPublish, getListProjectsQueryKey, useAdminLogout } from "@workspace/api-client-react";
-import { Link, useLocation } from "wouter";
+import {
+  useListProjects,
+  useDeleteProject,
+  useToggleProjectPublish,
+  getListProjectsQueryKey,
+} from "@workspace/api-client-react";
+import { Link } from "wouter";
 import { motion } from "framer-motion";
 import { useQueryClient } from "@tanstack/react-query";
+import { Plus, Pencil, Image, Trash2, Globe, EyeOff } from "lucide-react";
+import { useState } from "react";
 
 export default function AdminDashboard() {
   const { data: projects = [], isLoading } = useListProjects();
   const togglePublish = useToggleProjectPublish();
-  const logout = useAdminLogout();
-  const [, setLocation] = useLocation();
+  const deleteProject = useDeleteProject();
   const queryClient = useQueryClient();
+  const [confirmDelete, setConfirmDelete] = useState<number | null>(null);
 
   const handleToggle = (id: number, published: boolean) => {
     togglePublish.mutate(
       { id, data: { published } },
+      { onSuccess: () => queryClient.invalidateQueries({ queryKey: getListProjectsQueryKey() }) }
+    );
+  };
+
+  const handleDelete = (id: number) => {
+    deleteProject.mutate(
+      { id },
       {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: getListProjectsQueryKey() });
-        }
+          setConfirmDelete(null);
+        },
       }
     );
   };
 
-  const handleLogout = () => {
-    logout.mutate(undefined, {
-      onSuccess: () => setLocation("/admin")
-    });
-  };
+  const published = projects.filter(p => p.published).length;
 
   return (
     <AdminLayout>
-      <div className="flex justify-between items-end mb-12 border-b border-neutral-800 pb-6">
+      {/* Page header */}
+      <div className="flex justify-between items-end mb-10 pb-6 border-b border-[hsl(220,15%,18%)]">
         <div>
-          <h1 className="text-4xl font-serif tracking-tighter uppercase mb-2">Projects</h1>
-          <p className="text-neutral-500 tracking-widest text-sm uppercase">Content Management</p>
+          <p className="text-[10px] tracking-[0.35em] uppercase text-[hsl(38,72%,52%)] mb-1">Content</p>
+          <h1 className="text-3xl font-serif font-bold uppercase tracking-tight">Projects</h1>
         </div>
-        <div className="flex gap-4">
-          <button 
-            onClick={handleLogout}
-            className="px-6 py-2 border border-neutral-800 hover:border-neutral-600 transition-colors uppercase tracking-widest text-xs"
-          >
-            Sign Out
-          </button>
-          <Link 
-            href="/admin/projects/new"
-            className="px-6 py-2 bg-white text-black hover:bg-neutral-200 transition-colors uppercase tracking-widest text-xs font-medium"
-          >
-            New Project
-          </Link>
-        </div>
+        <Link
+          href="/admin/projects/new"
+          className="inline-flex items-center gap-2 bg-[hsl(38,72%,52%)] text-[hsl(220,18%,9%)] px-5 py-2.5 text-xs tracking-[0.2em] uppercase font-bold hover:bg-[hsl(38,72%,60%)] transition-colors"
+        >
+          <Plus size={13} />
+          New Project
+        </Link>
       </div>
 
+      {/* Stats row */}
+      <div className="grid grid-cols-3 gap-4 mb-10">
+        {[
+          { label: "Total Projects", value: projects.length },
+          { label: "Published", value: published },
+          { label: "Drafts", value: projects.length - published },
+        ].map(stat => (
+          <div key={stat.label} className="bg-[hsl(220,18%,11%)] border border-[hsl(220,15%,18%)] px-5 py-4">
+            <p className="text-2xl font-serif font-bold">{stat.value}</p>
+            <p className="text-[10px] tracking-[0.2em] uppercase text-[hsl(220,12%,45%)] mt-0.5">{stat.label}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Project Table */}
       {isLoading ? (
-        <div className="animate-pulse flex space-y-4 flex-col">
-          {[1,2,3].map(i => <div key={i} className="h-16 bg-neutral-900 w-full" />)}
+        <div className="space-y-3">
+          {[1,2,3].map(i => (
+            <div key={i} className="h-16 bg-[hsl(220,18%,11%)] border border-[hsl(220,15%,18%)] animate-pulse" />
+          ))}
         </div>
       ) : (
-        <div className="bg-neutral-950 border border-neutral-800 overflow-hidden">
+        <div className="border border-[hsl(220,15%,18%)] overflow-hidden">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-neutral-800 bg-neutral-900 text-xs tracking-widest uppercase text-neutral-400">
-                <th className="p-4 font-normal">Title</th>
-                <th className="p-4 font-normal">Location</th>
-                <th className="p-4 font-normal">Status</th>
-                <th className="p-4 font-normal">Visibility</th>
-                <th className="p-4 font-normal text-right">Actions</th>
+              <tr className="bg-[hsl(220,18%,11%)] border-b border-[hsl(220,15%,18%)]">
+                {["Project", "Location", "Sector", "Status", "Visibility", "Actions"].map(h => (
+                  <th key={h} className="px-4 py-3 text-[9px] tracking-[0.25em] uppercase text-[hsl(220,12%,40%)] font-medium">
+                    {h}
+                  </th>
+                ))}
               </tr>
             </thead>
             <tbody>
-              {projects.map((project) => (
-                <tr key={project.id} className="border-b border-neutral-800/50 hover:bg-neutral-900/50 transition-colors">
-                  <td className="p-4">
-                    <span className="font-serif text-lg">{project.title}</span>
-                    <div className="text-xs text-neutral-500 uppercase tracking-wider">{project.sector}</div>
+              {projects.map((project, i) => (
+                <motion.tr
+                  key={project.id}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: i * 0.04 }}
+                  className="border-b border-[hsl(220,15%,16%)] hover:bg-[hsl(220,18%,11%)] transition-colors"
+                  data-testid={`row-project-${project.id}`}
+                >
+                  <td className="px-4 py-3">
+                    <p className="font-serif font-bold text-sm">{project.title}</p>
+                    <p className="text-[10px] text-[hsl(220,12%,40%)] mt-0.5">/{project.slug}</p>
                   </td>
-                  <td className="p-4 text-neutral-400">{project.location || "—"}</td>
-                  <td className="p-4 text-neutral-400">{project.status}</td>
-                  <td className="p-4">
+                  <td className="px-4 py-3 text-xs text-[hsl(220,12%,55%)]">{project.location || "—"}</td>
+                  <td className="px-4 py-3 text-xs text-[hsl(220,12%,55%)]">{project.sector || "—"}</td>
+                  <td className="px-4 py-3 text-xs text-[hsl(220,12%,55%)]">{project.status}</td>
+                  <td className="px-4 py-3">
                     <button
                       onClick={() => handleToggle(project.id, !project.published)}
                       disabled={togglePublish.isPending}
-                      className={`text-xs px-3 py-1 uppercase tracking-widest border ${
-                        project.published 
-                          ? "border-green-900 text-green-500 hover:border-green-700" 
-                          : "border-neutral-700 text-neutral-500 hover:border-neutral-500 hover:text-neutral-300"
+                      className={`inline-flex items-center gap-1.5 text-[9px] px-2.5 py-1 tracking-[0.15em] uppercase border transition-all ${
+                        project.published
+                          ? "border-green-800 text-green-500 hover:bg-green-900/20"
+                          : "border-[hsl(220,15%,25%)] text-[hsl(220,12%,45%)] hover:border-[hsl(38,72%,52%)/50%] hover:text-[hsl(38,72%,52%)]"
                       }`}
+                      data-testid={`button-toggle-${project.id}`}
                     >
-                      {project.published ? "Published" : "Draft"}
+                      {project.published ? <Globe size={9} /> : <EyeOff size={9} />}
+                      {project.published ? "Live" : "Draft"}
                     </button>
                   </td>
-                  <td className="p-4 text-right space-x-4">
-                    <Link 
-                      href={`/admin/projects/${project.id}/images`}
-                      className="text-xs uppercase tracking-widest text-neutral-400 hover:text-white transition-colors"
-                    >
-                      Images
-                    </Link>
-                    <Link 
-                      href={`/admin/projects/${project.id}/edit`}
-                      className="text-xs uppercase tracking-widest text-white hover:text-neutral-300 transition-colors"
-                    >
-                      Edit
-                    </Link>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-3 justify-end">
+                      <Link
+                        href={`/admin/projects/${project.id}/images`}
+                        className="text-[hsl(220,12%,45%)] hover:text-foreground transition-colors"
+                        title="Manage Images"
+                        data-testid={`link-images-${project.id}`}
+                      >
+                        <Image size={13} />
+                      </Link>
+                      <Link
+                        href={`/admin/projects/${project.id}/edit`}
+                        className="text-[hsl(220,12%,45%)] hover:text-[hsl(38,72%,52%)] transition-colors"
+                        title="Edit"
+                        data-testid={`link-edit-${project.id}`}
+                      >
+                        <Pencil size={13} />
+                      </Link>
+                      {confirmDelete === project.id ? (
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => handleDelete(project.id)}
+                            className="text-[9px] text-red-400 uppercase tracking-widest hover:text-red-300"
+                          >
+                            Confirm
+                          </button>
+                          <button
+                            onClick={() => setConfirmDelete(null)}
+                            className="text-[9px] text-[hsl(220,12%,40%)] uppercase tracking-widest hover:text-foreground"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => setConfirmDelete(project.id)}
+                          className="text-[hsl(220,12%,35%)] hover:text-red-400 transition-colors"
+                          title="Delete"
+                          data-testid={`button-delete-${project.id}`}
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      )}
+                    </div>
                   </td>
-                </tr>
+                </motion.tr>
               ))}
               {projects.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="p-8 text-center text-neutral-500 tracking-widest uppercase text-sm">
-                    No projects found
+                  <td colSpan={6} className="px-4 py-12 text-center text-[hsl(220,12%,40%)] text-xs tracking-widest uppercase">
+                    No projects yet — create your first
                   </td>
                 </tr>
               )}

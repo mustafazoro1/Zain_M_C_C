@@ -2,137 +2,196 @@ import { useListFeaturedProjects } from "@workspace/api-client-react";
 import { motion } from "framer-motion";
 import { Link } from "wouter";
 import { PageTransition } from "@/components/ui/PageTransition";
+import { Footer } from "@/components/layout/Footer";
 import { useState } from "react";
-import { ProjectSummary } from "@workspace/api-client-react/src/generated/api.schemas";
-
-// Fallback images we generated if heroImage is missing
-const fallbackImages = [
-  "/images/arch-tower.png",
-  "/images/arch-cultural.png",
-  "/images/arch-civic.png",
-  "/images/arch-interior.png",
-  "/images/arch-pavilion.png",
-];
+import { ArrowRight } from "lucide-react";
 
 export default function Home() {
   const { data: featuredProjects = [], isLoading } = useListFeaturedProjects();
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-      </div>
-    );
-  }
-
-  // Ensure we have at least 5 projects for the accordion, repeat if necessary
   const displayProjects =
     featuredProjects.length > 0
       ? featuredProjects.slice(0, 5)
       : [
-          { id: 1, title: "The Obsidian Tower", slug: "obsidian-tower", location: "New York", heroImage: fallbackImages[0] },
-          { id: 2, title: "Cultural Center", slug: "cultural-center", location: "London", heroImage: fallbackImages[1] },
-          { id: 3, title: "Civic Pavilion", slug: "civic-pavilion", location: "Tokyo", heroImage: fallbackImages[2] },
-          { id: 4, title: "National Gallery", slug: "national-gallery", location: "Paris", heroImage: fallbackImages[3] },
-          { id: 5, title: "Horizon Building", slug: "horizon-building", location: "Dubai", heroImage: fallbackImages[4] },
+          { id: 1, title: "Obsidian Cultural Centre", slug: "obsidian-cultural-centre", location: "Dubai, UAE", heroImage: "https://images.unsplash.com/photo-1470723710355-95304d8aece4?w=1600" },
+          { id: 2, title: "Meridian Tower", slug: "meridian-tower", location: "Shenzhen, China", heroImage: "https://images.unsplash.com/photo-1486325212027-8081e485255e?w=1600" },
+          { id: 3, title: "Heliodor Residences", slug: "heliodor-residences", location: "Monaco", heroImage: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=1600" },
+          { id: 4, title: "Civic Axis", slug: "civic-axis-masterplan", location: "Riyadh", heroImage: "https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=1600" },
+          { id: 5, title: "Quay District", slug: "quay-district-towers", location: "Auckland", heroImage: "https://images.unsplash.com/photo-1515263487990-61b07816b324?w=1600" },
         ] as any[];
 
   return (
     <PageTransition>
-      <div className="bg-black min-h-screen text-white">
+      <div className="bg-background min-h-screen text-foreground">
         {/* Full-screen Accordion */}
-        <section className="h-screen w-full flex overflow-hidden bg-black">
-          {displayProjects.map((project, i) => {
-            const isHovered = hoveredIndex === i;
-            const flexValue = hoveredIndex === null ? 1 : isHovered ? 4 : 0.5;
+        <section className="h-screen w-full flex overflow-hidden">
+          {isLoading ? (
+            <div className="w-full flex items-center justify-center">
+              <div className="w-8 h-8 border-2 border-[hsl(220,15%,25%)] border-t-[hsl(38,72%,52%)] rounded-full animate-spin" />
+            </div>
+          ) : (
+            displayProjects.map((project: any, i: number) => {
+              const isHovered = hoveredIndex === i;
+              const flexValue = hoveredIndex === null ? 1 : isHovered ? 4 : 0.4;
 
-            return (
-              <motion.div
-                key={project.id}
-                className="relative h-full border-r border-white/10 group cursor-pointer overflow-hidden"
-                animate={{ flex: flexValue }}
-                transition={{ duration: 0.7, ease: [0.32, 0.72, 0, 1] }}
-                onMouseEnter={() => setHoveredIndex(i)}
-                onMouseLeave={() => setHoveredIndex(null)}
-                data-cursor-expand
-              >
-                <Link href={`/projects/${project.slug}`} className="block w-full h-full relative">
-                  {/* Background Image */}
-                  <motion.div
-                    className="absolute inset-0 bg-cover bg-center bg-no-repeat z-0"
-                    style={{ backgroundImage: `url(${project.heroImage || fallbackImages[i % fallbackImages.length]})` }}
-                    animate={{ scale: isHovered ? 1.05 : 1 }}
-                    transition={{ duration: 1.5, ease: "easeOut" }}
-                  />
-                  {/* Overlay */}
-                  <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors duration-700 z-10" />
-                  
-                  {/* Content */}
-                  <div className="absolute inset-0 z-20 flex flex-col justify-end p-8">
+              return (
+                <motion.div
+                  key={project.id}
+                  className="relative h-full group cursor-pointer overflow-hidden border-r border-white/10 last:border-r-0"
+                  animate={{ flex: flexValue }}
+                  transition={{ duration: 0.75, ease: [0.32, 0.72, 0, 1] }}
+                  onMouseEnter={() => setHoveredIndex(i)}
+                  onMouseLeave={() => setHoveredIndex(null)}
+                >
+                  <Link href={`/projects/${project.slug}`} className="block w-full h-full relative">
+                    {/* BG Image */}
                     <motion.div
-                      animate={{
-                        opacity: isHovered || hoveredIndex === null ? 1 : 0,
-                        y: isHovered ? 0 : 20,
-                      }}
-                      transition={{ duration: 0.5 }}
-                    >
-                      <p className="text-sm tracking-[0.2em] text-white/70 uppercase mb-2">
-                        {project.location || "Global"}
-                      </p>
-                      <h2 className="text-4xl md:text-5xl lg:text-7xl font-serif font-bold tracking-tighter uppercase whitespace-nowrap overflow-hidden text-ellipsis">
-                        {project.title}
-                      </h2>
-                    </motion.div>
-                  </div>
-                </Link>
-              </motion.div>
-            );
-          })}
+                      className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+                      style={{ backgroundImage: `url(${project.heroImage})` }}
+                      animate={{ scale: isHovered ? 1.06 : 1 }}
+                      transition={{ duration: 1.4, ease: "easeOut" }}
+                    />
+                    {/* Gradient */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-[hsl(220,18%,7%)/85%] via-transparent to-transparent transition-opacity duration-700" />
+                    <div className={`absolute inset-0 bg-[hsl(220,18%,9%)/30%] transition-opacity duration-700 ${isHovered ? "opacity-0" : "opacity-100"}`} />
+
+                    {/* Label — always visible (rotated when collapsed) */}
+                    <div className="absolute inset-0 flex flex-col justify-end p-6 md:p-8">
+                      <motion.div
+                        animate={{ opacity: 1, y: isHovered ? 0 : 5 }}
+                        transition={{ duration: 0.4 }}
+                      >
+                        <motion.p
+                          animate={{ opacity: isHovered ? 1 : 0.5 }}
+                          className="text-[10px] tracking-[0.3em] uppercase text-[hsl(38,72%,52%)] mb-2 whitespace-nowrap overflow-hidden text-ellipsis"
+                        >
+                          {project.location || "Global"}
+                        </motion.p>
+                        <motion.h2
+                          animate={{ opacity: isHovered || hoveredIndex === null ? 1 : 0.3 }}
+                          className="text-xl md:text-2xl lg:text-4xl font-serif font-bold tracking-tight uppercase leading-tight whitespace-nowrap overflow-hidden text-ellipsis"
+                        >
+                          {project.title}
+                        </motion.h2>
+                        <motion.div
+                          animate={{ opacity: isHovered ? 1 : 0, y: isHovered ? 0 : 8 }}
+                          transition={{ duration: 0.35, delay: 0.1 }}
+                          className="flex items-center gap-2 mt-3"
+                        >
+                          <span className="text-[10px] tracking-[0.25em] uppercase text-[hsl(38,72%,52%)]">
+                            View Project
+                          </span>
+                          <ArrowRight size={11} className="text-[hsl(38,72%,52%)]" />
+                        </motion.div>
+                      </motion.div>
+                    </div>
+                  </Link>
+                </motion.div>
+              );
+            })
+          )}
         </section>
 
-        {/* Featured Projects Grid */}
-        <section className="py-32 px-6 max-w-screen-2xl mx-auto">
-          <motion.h2 
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-3xl md:text-5xl font-serif font-bold tracking-tighter uppercase mb-16"
-          >
-            Selected Works
-          </motion.h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {featuredProjects.map((project, i) => (
-              <motion.div
-                key={project.id}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1, duration: 0.6 }}
-                data-cursor-expand
-              >
-                <Link href={`/projects/${project.slug}`} className="block group">
-                  <div className="aspect-[4/5] relative overflow-hidden bg-neutral-900 mb-6">
-                    <motion.div
-                      className="absolute inset-0 bg-cover bg-center"
-                      style={{ backgroundImage: `url(${project.heroImage || fallbackImages[i % fallbackImages.length]})` }}
-                      whileHover={{ scale: 1.05 }}
-                      transition={{ duration: 0.6, ease: [0.33, 1, 0.68, 1] }}
-                    />
-                  </div>
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h3 className="text-xl font-serif tracking-tighter uppercase mb-2">{project.title}</h3>
-                      <p className="text-sm text-neutral-500">{project.location}</p>
-                    </div>
-                    <p className="text-sm text-neutral-500 uppercase tracking-widest">{project.sector}</p>
-                  </div>
-                </Link>
-              </motion.div>
-            ))}
+        {/* Intro strip */}
+        <section className="border-b border-[hsl(220,15%,18%)] px-6 py-12">
+          <div className="max-w-screen-2xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+            <div>
+              <p className="text-[10px] tracking-[0.4em] uppercase text-[hsl(38,72%,52%)] mb-2">
+                Zain Manzoor Co.
+              </p>
+              <h2 className="text-2xl md:text-4xl font-serif font-bold uppercase tracking-tight">
+                Architecture &amp; Construction
+              </h2>
+            </div>
+            <p className="text-sm text-[hsl(220,12%,55%)] max-w-md leading-relaxed">
+              A multi-disciplinary practice delivering landmark architectural and construction projects across the Middle East and South Asia since 2005.
+            </p>
+            <Link
+              href="/projects"
+              className="shrink-0 inline-flex items-center gap-3 border border-[hsl(38,72%,52%)] text-[hsl(38,72%,52%)] px-6 py-3 text-xs tracking-[0.2em] uppercase hover:bg-[hsl(38,72%,52%)] hover:text-[hsl(220,18%,9%)] transition-all duration-200"
+            >
+              View All Projects
+              <ArrowRight size={13} />
+            </Link>
           </div>
         </section>
+
+        {/* Selected Works Grid */}
+        <section className="py-24 px-6">
+          <div className="max-w-screen-2xl mx-auto">
+            <div className="flex justify-between items-end mb-14">
+              <motion.h2
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                className="text-3xl md:text-5xl font-serif font-bold tracking-tight uppercase"
+              >
+                Selected Works
+              </motion.h2>
+              <Link href="/projects" className="text-xs tracking-[0.2em] uppercase text-[hsl(220,12%,55%)] hover:text-[hsl(38,72%,52%)] transition-colors hidden md:flex items-center gap-2">
+                All Projects <ArrowRight size={11} />
+              </Link>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-14">
+              {featuredProjects.map((project, i) => (
+                <motion.div
+                  key={project.id}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.08, duration: 0.65 }}
+                >
+                  <Link href={`/projects/${project.slug}`} className="block group">
+                    <div className="aspect-[4/3] relative overflow-hidden bg-[hsl(220,18%,12%)] mb-5 border border-[hsl(220,15%,18%)] group-hover:border-[hsl(38,72%,52%)/40%] transition-colors duration-300">
+                      <motion.div
+                        className="absolute inset-0 bg-cover bg-center"
+                        style={{ backgroundImage: `url(${project.heroImage})` }}
+                        whileHover={{ scale: 1.05 }}
+                        transition={{ duration: 0.7, ease: [0.33, 1, 0.68, 1] }}
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-[hsl(220,18%,9%)/60%] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                    </div>
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h3 className="text-base font-serif font-bold tracking-tight uppercase mb-1 group-hover:text-[hsl(38,72%,52%)] transition-colors duration-200">
+                          {project.title}
+                        </h3>
+                        <p className="text-xs text-[hsl(220,12%,50%)]">{project.location}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-xs text-[hsl(220,12%,45%)] uppercase tracking-wider">{project.sector}</p>
+                        <p className="text-xs text-[hsl(220,12%,40%)] mt-0.5">{project.year}</p>
+                      </div>
+                    </div>
+                  </Link>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* CTA strip */}
+        <section className="py-20 px-6 bg-[hsl(220,18%,11%)] border-y border-[hsl(220,15%,18%)]">
+          <div className="max-w-screen-2xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
+            <div>
+              <h2 className="text-2xl md:text-4xl font-serif font-bold uppercase tracking-tight mb-2">
+                Have a project in mind?
+              </h2>
+              <p className="text-sm text-[hsl(220,12%,55%)]">Let us bring your vision to life.</p>
+            </div>
+            <Link
+              href="/contact"
+              className="shrink-0 bg-[hsl(38,72%,52%)] text-[hsl(220,18%,9%)] px-10 py-4 text-xs tracking-[0.25em] uppercase font-bold hover:bg-[hsl(38,72%,60%)] transition-colors inline-flex items-center gap-3"
+            >
+              Start a Conversation
+              <ArrowRight size={13} />
+            </Link>
+          </div>
+        </section>
+
+        <Footer />
       </div>
     </PageTransition>
   );
